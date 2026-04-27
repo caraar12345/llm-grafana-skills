@@ -59,15 +59,39 @@ Skills are organized into plugin groups. All skill files live under `skills/<plu
 
 ### grafana-core
 
-Core Grafana concepts — dashboards, panels, PromQL, and visualization.
+Core Grafana concepts — dashboards, visualization, PromQL, alerting, and telemetry collection.
 
-*Coming soon.*
+| Skill | Description |
+|-------|-------------|
+| `grafana-oss` | Grafana OSS core — dashboards, data sources, provisioning, RBAC, and server configuration |
+| `dashboarding` | Create and organise Grafana dashboards — panels, variables, transformations, and thresholds |
+| `promql` | Write, validate, and optimise PromQL queries for Prometheus and Grafana Cloud Metrics |
+| `alerting-irm` | Grafana Alerting, Incident Response Management, and SLOs — rules, contact points, and on-call |
+| `alloy` | Grafana Alloy OpenTelemetry collector — config language, components, and telemetry pipelines |
+| `beyla` | Grafana Beyla eBPF auto-instrumentation for zero-code application observability |
+| `opentelemetry` | OpenTelemetry with the Grafana stack — SDK instrumentation, OTLP, and collectors |
 
 ### grafana-cloud
 
-Grafana Cloud — fleet management, cloud integrations, adaptive metrics, and AI agent connectivity.
+Grafana Cloud — fleet management, cloud integrations, cost optimization, and AI agent connectivity.
 
-*Coming soon.*
+| Skill | Description |
+|-------|-------------|
+| `admin` | Grafana Cloud account management — organizations, stacks, RBAC, SSO, and service accounts |
+| `send-data` | Send telemetry to Grafana Cloud — metrics, logs, traces, and profiles via Alloy or SDKs |
+| `fleet-management` | Manage Grafana Alloy collector fleets with remote configuration and OpAMP |
+| `cloud-integrations` | Connect AWS, Azure, and other cloud providers to Grafana Cloud |
+| `infrastructure` | Infrastructure monitoring — Kubernetes, host/container metrics, and cloud integrations |
+| `app-observability` | Application Observability (APM), Frontend Observability (Faro), and AI Observability |
+| `database-observability` | Query-level performance insights for MySQL and PostgreSQL |
+| `adaptive-metrics` | Reduce metrics cost with Adaptive Metrics aggregation rules and cardinality management |
+| `cost-management` | Grafana Cloud cost monitoring, attribution, usage alerts, and optimization |
+| `dpm-finder` | Identify Prometheus metrics driving high Data Points per Minute (DPM) |
+| `oncall-irm` | Grafana OnCall and IRM — alert routing, escalation chains, and incident lifecycle |
+| `ml-ai` | AI/ML features — Grafana Assistant, Dynamic Alerting, Sift, Knowledge Graph, and LLM Plugin |
+| `assistant-mcp` | Connect AI coding agents (Claude Code, Cursor, Codex) to Grafana Cloud via MCP |
+| `private-connectivity` | Private network connectivity — AWS PrivateLink, Azure Private Link, GCP Private Service Connect |
+| `testing` | Synthetic Monitoring, k6 Cloud load testing, and Frontend Observability |
 
 ### grafana-lgtm
 
@@ -78,17 +102,7 @@ Open-source LGTM observability stack — Loki, Tempo, Prometheus/Mimir, and Pyro
 | `loki` | Log aggregation with Grafana Loki — LogQL queries, pipelines, and architecture |
 | `tempo` | Distributed tracing with Grafana Tempo — TraceQL, service graphs, and correlations |
 | `prometheus` | Metrics with Prometheus — PromQL, alerting, recording rules, and Mimir |
-| `pyroscope` | Continuous profiling with Grafana Pyroscope — flame graphs, diff views, and language support |
-
-### grafana-lgtm
-
-Open-source LGTM observability stack — Loki, Tempo, Prometheus/Mimir, and Pyroscope.
-
-| Skill | Description |
-|-------|-------------|
-| `loki` | Log aggregation with Grafana Loki — LogQL queries, pipelines, and architecture |
-| `tempo` | Distributed tracing with Grafana Tempo — TraceQL, service graphs, and correlations |
-| `prometheus` | Metrics with Prometheus — PromQL, alerting, recording rules, and Mimir |
+| `mimir` | Scalable long-term metrics storage with Grafana Mimir — architecture and operations |
 | `pyroscope` | Continuous profiling with Grafana Pyroscope — flame graphs, diff views, and language support |
 
 ### grafana-plugins
