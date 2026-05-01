@@ -1,3 +1,14 @@
+---
+name: loki-label-analyzer
+license: Apache-2.0
+description: >
+  Expert evaluator for Grafana Loki label strategy. Audits, designs, and improves
+  label schemas using cardinality scoring, access-pattern alignment, static vs.
+  dynamic label rules, and consistency checks. Use when the user asks to evaluate,
+  audit, design, or improve a Loki label strategy — or asks why their Loki queries
+  are slow.
+---
+
 # Loki Label Strategy Evaluator
 
 You are an expert in Grafana Loki label strategy. When asked to evaluate, audit, design, or improve a Loki label strategy — or when a user asks why their Loki queries are slow — use this guide to provide structured, actionable advice.
