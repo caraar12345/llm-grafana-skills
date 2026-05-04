@@ -139,7 +139,7 @@ Every log source should consider these base labels — all low cardinality, high
 // Normalize K8s filename to remove pod UID
 stage.replace {
  source = "filename"
- expression = `/var/log/pods/([^/]+)_[^_]+_[^/]+/([^/]+)/\d+\.log`
+ expression = "/var/log/pods/([^/]+)_[^_]+_[^/]+/([^/]+)/\\d+\\.log"
  replace = "/var/log/pods/$1/$2/current.log"
 }
 ```
