@@ -160,7 +160,7 @@ In addition to common labels, add:
 // /var/log/myapp/logfile-20230927.txt → /var/log/myapp/logfile.txt
 stage.replace {
  source = "filename"
- expression = `-\d{8}(\.log|\.txt)$`
+ expression = "-\\d{8}(\\.log|\\.txt)$"
  replace = "$1"
 }
 ```
@@ -225,23 +225,23 @@ loki.process "embed_pod" {
 
  // For JSON logs
  stage.match {
- selector = "{level=~\".+\"} |~ \"^\\s*\\{\""
+ selector = "{} |~ \"^\\s*\\{\""
  stage.replace {
  expression = "\\}$"
  replace = ""
  }
  stage.template {
  source = "log_line"
- template = `{{ .Entry }},"_pod":"{{ .pod }}"}`
+ template = "{{ .Entry }},\"_pod\":\"{{ .pod }}\"}"
  }
  }
 
  // For text logs
  stage.match {
- selector = `{log_line=""}`
+ selector = "{} !~ \"^\\s*\\{\""
  stage.template {
  source = "log_line"
- template = `{{ .Entry }} _pod={{ .pod }}`
+ template = "{{ .Entry }} _pod={{ .pod }}"
  }
  }
 
@@ -373,7 +373,7 @@ loki.process "enforce_labels" {
 ```alloy
 stage.template {
  source = "team"
- template = `{{ if .Value }}{{ .Value }}{{ else }}unknown{{ end }}`
+ template = "{{ if .Value }}{{ .Value }}{{ else }}unknown{{ end }}"
 }
 stage.labels { values = { team = "" } }
 ```

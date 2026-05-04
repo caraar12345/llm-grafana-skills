@@ -41,6 +41,12 @@
           "description": "Grafana Professional Services tool for identifying which Prometheus metrics drive high Data Points per Minute (DPM). Analyzes metric-level DPM with per-label breakdown to help optimize Grafana Cloud costs. Use when the user asks about DPM analysis, high-cardinality metrics, metric cost optimization, finding noisy metrics, or running dpm-finder.",
           "path": "skills/grafana-cloud/dpm-finder",
           "tags": ["grafana-cloud", "dpm", "metrics", "cost-optimization", "prometheus", "professional-services"]
+        },
+        {
+          "name": "loki-label-analyzer",
+          "description": "Expert evaluator for Grafana Loki label strategy. Audits, designs, and improves label schemas using cardinality scoring, access-pattern alignment, static vs. dynamic label rules, and consistency checks. Use when the user asks to evaluate, audit, design, or improve a Loki label strategy — or asks why their Loki queries are slow.",
+          "path": "skills/grafana-cloud/loki-label-analyzer",
+          "tags": ["grafana-cloud", "loki", "logs", "labels", "cardinality", "alloy"]
         }
       ]
     },
