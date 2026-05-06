@@ -68,7 +68,8 @@
         "./skills/grafana-cloud/private-connectivity",
         "./skills/grafana-cloud/cost-management",
         "./skills/grafana-cloud/oncall-irm",
-        "./skills/grafana-cloud/dpm-finder"
+        "./skills/grafana-cloud/dpm-finder",
+        "./skills/grafana-cloud/loki-label-analyzer"
       ]
     },
     {
