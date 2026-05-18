@@ -51,9 +51,12 @@ Applications
     |
     | (OTLP 4317/4318, Jaeger 14250/14268, Zipkin 9411)
     v
-[Distributor]  ----  hashes traceID, routes to N ingesters
+[Distributor]  ----  hashes traceID, routes to N partitions
     |
-    |---> [Ingester]  (WAL + Parquet block assembly, flush to object store)
+ [Kafka]
+    |---> [Live Stores]  (storage of recent data)
+    |
+    |---> [Block Builders] (Parquet block assembly, flush to object storage)
     |
     |---> [Metrics Generator]  (optional: derives RED metrics -> Prometheus)
     
@@ -62,7 +65,7 @@ Grafana  -->  [Query Frontend]  (shards queries)
                     |
               [Querier pool]
               /           \
-    [Ingesters]     [Object Storage]
+    [Live Stores]   [Object Storage]
     (recent)        (historical blocks)
 ```
 
@@ -71,10 +74,11 @@ Grafana  -->  [Query Frontend]  (shards queries)
 | Component | Role | Default Ports |
 |-----------|------|---------------|
 | Distributor | Receives spans, routes by traceID hash | 4317 (gRPC), 4318 (HTTP) |
-| Ingester | Buffers in memory, flushes to storage | - |
+| Live Store | Buffers recent data on local disk and serves queries | - |
 | Query Frontend | Query orchestrator, shards across queriers | 3200 (HTTP) |
 | Querier | Executes search jobs against storage | - |
 | Compactor | Merges blocks, enforces retention | - |
+| Block Builder | Creates the final parquet blocks and flushes to object storage | - |
 | Metrics Generator | Derives RED metrics from spans | - |
 
 ---
@@ -87,7 +91,8 @@ TraceQL queries filter traces by span properties. Structure: `{ filters } | pipe
 
 ```traceql
 span.http.status_code        # span-level attribute
-resource.service.name        # resource attribute (from SDK)
+resource.service.name        # resource-level attribute (from SDK)
+event.name                   # event-level attribute
 name                         # intrinsic: span operation name
 status                       # intrinsic: ok | error | unset
 duration                     # intrinsic: span duration
@@ -120,12 +125,6 @@ rootName                     # intrinsic: operation name of the root span
 # Count errors per trace (more than 2)
 { status = error } | count() >= 2
 
-# Group by service
-{ status = error } | by(resource.service.name)
-
-# P99 latency grouping
-{ kind = server } | avg(duration) by(resource.service.name)
-
 # Select specific fields
 { status = error } | select(span.http.url, duration, resource.service.name)
 
@@ -147,9 +146,6 @@ rootName                     # intrinsic: operation name of the root span
 
 # P99 latency
 { kind = server } | quantile_over_time(duration, .99) by (resource.service.name)
-
-# With exemplars
-{ kind = server } | quantile_over_time(duration, .99) by (resource.service.name) with (exemplars=true)
 ```
 
 ---
@@ -164,71 +160,6 @@ cd tempo/example/docker-compose/local
 mkdir tempo-data
 docker compose up -d
 # Grafana at http://localhost:3000, Tempo API at http://localhost:3200
-```
-
-### Minimal Single-Node Config
-
-```yaml
-server:
-  http_listen_port: 3200
-
-distributor:
-  receivers:
-    otlp:
-      protocols:
-        grpc:
-          endpoint: 0.0.0.0:4317
-        http:
-          endpoint: 0.0.0.0:4318
-
-ingester:
-  lifecycler:
-    ring:
-      replication_factor: 1
-
-compactor:
-  compaction:
-    block_retention: 336h    # 14 days
-
-storage:
-  trace:
-    backend: local
-    local:
-      path: /var/tempo/traces
-    wal:
-      path: /var/tempo/wal
-
-memberlist:
-  abort_if_cluster_join_fails: false
-  join_members: []
-```
-
-### Production (S3 + Microservices)
-
-```yaml
-storage:
-  trace:
-    backend: s3
-    s3:
-      bucket: tempo-traces
-      endpoint: s3.amazonaws.com
-      region: us-east-1
-      # Use IRSA/IAM roles (preferred over access keys)
-
-compactor:
-  compaction:
-    block_retention: 336h    # Override per-tenant in overrides section
-
-memberlist:
-  join_members:
-    - tempo-1:7946
-    - tempo-2:7946
-    - tempo-3:7946
-
-ingester:
-  lifecycler:
-    ring:
-      replication_factor: 3
 ```
 
 ### Kubernetes (Helm)
@@ -309,7 +240,7 @@ metrics_generator:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]
+      processors: [service-graphs, span-metrics]
 ```
 
 ### Processor Types
