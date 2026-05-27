@@ -69,7 +69,9 @@
         "./skills/grafana-cloud/cost-management",
         "./skills/grafana-cloud/oncall-irm",
         "./skills/grafana-cloud/dpm-finder",
-        "./skills/grafana-cloud/loki-label-analyzer"
+        "./skills/grafana-cloud/loki-label-analyzer",
+        "./skills/grafana-cloud/prometheus-label-strategy",
+        "./skills/grafana-cloud/prometheus-cardinality-troubleshooter"
       ]
     },
     {

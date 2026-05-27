@@ -91,6 +91,8 @@ Grafana Cloud — fleet management, cloud integrations, cost optimization, and A
 | [cost-management](skills/grafana-cloud/cost-management) | Grafana Cloud cost monitoring, attribution, usage alerts, and optimization |
 | [dpm-finder](skills/grafana-cloud/dpm-finder) | Identify Prometheus metrics driving high Data Points per Minute (DPM) |
 | [loki-label-analyzer](skills/grafana-cloud/loki-label-analyzer) | Evaluate and improve Loki label strategy using cardinality, query patterns, and label hygiene |
+| [prometheus-label-strategy](skills/grafana-cloud/prometheus-label-strategy) | Audit and design Prometheus label schemas — cardinality, histograms, source-side prevention |
+| [prometheus-cardinality-troubleshooter](skills/grafana-cloud/prometheus-cardinality-troubleshooter) | Diagnose live Prometheus cardinality issues — slow queries, OOMs, high Active Series bills |
 | [oncall-irm](skills/grafana-cloud/oncall-irm) | Grafana OnCall and IRM — alert routing, escalation chains, and incident lifecycle |
 | [ml-ai](skills/grafana-cloud/ml-ai) | AI/ML features — Grafana Assistant, Dynamic Alerting, Sift, Knowledge Graph, and LLM Plugin |
 | [assistant-mcp](skills/grafana-cloud/assistant-mcp) | Connect AI coding agents (Claude Code, Cursor, Codex) to Grafana Cloud via MCP |
