@@ -19,6 +19,24 @@ This skill is **diagnostic and operational**. For schema design and prevention, 
 
 ---
 
+## Before You Remediate: The One Rule
+
+Under pressure, the tempting move is to `labeldrop` the high-cardinality label at scrape time. **Do not.** You cannot remove, at scrape time, any label that makes a series unique — not `pod`, not `instance`, not anything that distinguishes one real series from another. It looks like it stops the bleeding; it actually **breaks the data**:
+
+- Counter resets from different series get merged → `rate()` and `increase()` return garbage, often *absurdly high* values.
+- Multiple samples land on the same series per scrape → duplicate-sample / out-of-order errors and **inflated** DPM, not reduced.
+- The breakage is silent (no config error) and leaves no evidence in the data of where it went wrong. Weeks later someone asks "why is my DPM so high / why is `rate()` absurd?" and there's nothing to point to.
+
+The only safe remediations are:
+
+1. **Drop an *entire* unwanted metric** (`action: drop` on `__name__`) — you're discarding the whole metric, not merging distinct series.
+2. **Fix the source** — stop the application emitting the bad label (the real fix for unbounded `path`, `user_id`, etc.).
+3. **Adaptive Metrics** — for structural cardinality on series you can't fix at the source. It aggregates *correctly* (counter-reset-aware, audited, reversible). This is the right way to reduce the cost of a label like `pod`. Route to `adaptive-metrics`.
+
+Everywhere below that says "drop a label," read it through this rule: drop whole metrics, fix the source, or use Adaptive Metrics — never `labeldrop` a distinguishing label.
+
+---
+
 ## Symptom → Likely Cause
 
 | Symptom | Likely Cause | First Action |
@@ -92,7 +110,7 @@ curl -s -u "<user>:<token>" \
 ```
 
 **Heuristics**:
-- A histogram (`_bucket`) at the top is almost always the answer — those have a 14× multiplier (bucket count + 3). The fix is usually **trimming labels on the underlying histogram**, not the buckets themselves.
+- A histogram (`_bucket`) at the top is almost always the answer — those have a 14× multiplier (bucket count + 3). The fix is usually **reducing the labels on the underlying histogram at the source** (in instrumentation code), not stripping them at scrape and not touching the buckets themselves.
 - A metric in the top 5 you don't recognize → grep the codebase for it; it's likely a new feature flag or a debug metric that shipped to prod
 - The same metric showing up under multiple variants (`_total`, `_count`, `_sum`) — that's a histogram or summary, count all variants together for the true impact
 
@@ -233,7 +251,7 @@ Restarting Prometheus drops churned series but is not a fix. The fix is at the s
 **Tell**: `*_bucket` metric at the top of `seriesCountByMetricName`. Multiplier ≈ 14×.
 
 **Fix**:
-1. First, **reduce labels on the histogram** — every label removed saves 14× series. Trim `path`, `method`, or `status_code` before touching bucket count.
+1. First, **reduce labels on the histogram at the source** — every label removed saves 14× series. Trim `path`, `method`, or `status_code` in the instrumentation code (don't `labeldrop` them at scrape — that merges distinct histograms and corrupts the buckets). For series already in Grafana Cloud you can't change, aggregate them with Adaptive Metrics.
 2. Then, reduce bucket count if appropriate (custom buckets vs. defaults).
 3. For high-resolution latency tracking, consider **native histograms** (Prometheus 2.40+) — single sparse series replaces the bucket family.
 
@@ -253,23 +271,18 @@ Restarting Prometheus drops churned series but is not a fix. The fix is at the s
 
 **Tell**: `http_requests_total` (or framework equivalent) grew 10×+ overnight. `topk(20, count by (path) (http_requests_total))` shows hundreds of `/users/123456`-style values.
 
-**Fix**: route the user to `prometheus-label-strategy` for the long-term fix (template paths in code). For the immediate stop:
+**Fix**: the real fix is to **template the path in application code** (`/users/:id`) — route the user to `prometheus-label-strategy`. For series already in Grafana Cloud, **Adaptive Metrics** can aggregate `path` away correctly — route to `adaptive-metrics`.
+
+Do **not** "normalize" `path` with a relabel `replacement` rule — collapsing `/users/123`, `/users/456`, … into one `/users/:id` value at scrape merges distinct series and produces duplicate-sample errors and broken `rate()`. The merge has to happen at the source (templating) or post-ingest (Adaptive Metrics), never at scrape.
+
+If you must stop a production fire *right now* and templating isn't deployable yet, the only safe scrape-time action is to drop the **entire** offending metric (you lose it completely until the code fix lands — a deliberate trade, not a silent corruption):
 
 ```yaml
-# In Prometheus scrape config — emergency drop
+# Emergency: drop the whole metric until the source is templated
 metric_relabel_configs:
-  - source_labels: [__name__, path]
-    regex: http_requests_total;/users/\d+
+  - source_labels: [__name__]
+    regex: http_requests_total
     action: drop
-```
-
-Or normalize via relabel:
-```yaml
-metric_relabel_configs:
-  - source_labels: [path]
-    regex: /users/\d+
-    target_label: path
-    replacement: /users/:id
 ```
 
 ### Application emitting a debug metric in prod
@@ -286,18 +299,23 @@ metric_relabel_configs:
 
 Open a ticket against the team to remove it from the code.
 
-### Broken relabel rule allowing app-emitted target labels
+### App-emitted labels colliding with target labels
 
-**Tell**: Series count for one job is several × what it should be. Looking at one series, you see both an app-emitted `instance=...` AND the target `instance=...` collided into something weird.
+**Tell**: Series count for one job is several × what it should be. Looking at one series, you see both an app-emitted `instance=...` AND the target `instance=...` collided into something weird (Prometheus renames the conflicting one to `exported_instance`).
 
-**Fix**: ensure your `metric_relabel_configs` drops the labels that should come only from targets:
+**Fix**: the right fix is **in the application** — stop emitting `instance`/`node`/`host` from code; they belong to the scrape target. Confirm `honor_labels` is `false` (the default) so the target labels win.
+
+If you need a scrape-time stopgap, you may remove a label *only* where it **exactly duplicates** a target label — that's the one safe `labeldrop`, because the target label still provides uniqueness. Scope it tightly to the duplicated names and **never include `pod`** (or any other label that is the source of uniqueness):
+
 ```yaml
+# Stopgap ONLY for app-emitted duplicates of target labels.
+# Drops the `exported_*` collisions — NOT pod, which makes K8s series unique.
 metric_relabel_configs:
-  - regex: (instance|pod|node|host|job)
+  - regex: exported_(instance|node|host)
     action: labeldrop
 ```
 
-Then the target labels from `relabel_configs` apply cleanly.
+Then the target labels from `relabel_configs` apply cleanly. Prefer fixing the app.
 
 ### Federation amplifying cardinality
 
@@ -322,68 +340,53 @@ Then the target labels from `relabel_configs` apply cleanly.
 Cardinality fire confirmed
 │
 ├── Need to stop the bleeding NOW (production OOM, ingest 429s)
-│   └── Apply emergency drop via metric_relabel_configs at scrape config
+│   └── Drop the ENTIRE offending metric via metric_relabel_configs (action: drop on __name__)
 │       (also applies to Alloy/Agent — same syntax)
+│       Do NOT labeldrop a distinguishing label — it breaks the data, see "The One Rule".
 │       Then schedule the proper fix.
 │
 ├── It's a Grafana Cloud Active Series bill issue, not a perf issue
 │   ├── Cardinality is structural and you can't fix the app
-│   │   └── Route to `adaptive-metrics` skill (post-ingest aggregation rules)
+│   │   └── Route to `adaptive-metrics` skill (post-ingest aggregation rules — the safe way)
 │   └── You want metric-by-metric DPM breakdown
 │       └── Route to `dpm-finder` skill
 │
 ├── It's a fixable application bug (unbounded label, debug metric in prod)
-│   ├── Short-term: metric_relabel_configs drop at scrape
+│   ├── Short-term: drop the whole metric at scrape, OR aggregate via Adaptive Metrics
 │   └── Long-term: fix in code; route to `prometheus-label-strategy` for design guidance
 │
 ├── It's histogram cardinality
-│   ├── Trim labels on the underlying histogram (14× win per label)
+│   ├── Reduce labels on the underlying histogram AT THE SOURCE (14× win per label)
 │   ├── Reduce bucket count if appropriate
 │   └── Consider native histograms for high-resolution latency
 │
 └── It's churn (deploy-driven)
-    ├── Remove `pod`, `version`, `git_sha` from application metrics
-    ├── Use info-metric pattern for `version` (route to `prometheus-label-strategy`)
-    └── Verify K8s SD relabel rules aren't carrying `uid` or other ephemeral fields
+    ├── Stop EMITTING `version`/`git_sha`/`instance` from app code (use info-metric for version)
+    ├── Keep `pod` — never drop it; if pod-level series are too costly, use Adaptive Metrics
+    └── Verify K8s SD relabel rules aren't mapping in `uid` or other ephemeral fields
 ```
 
 ---
 
 ## Emergency Drop Patterns (copy-paste ready)
 
+These are the **safe** scrape-time emergency actions: dropping an *entire* unwanted metric. They do not merge distinct series, so they don't corrupt the data.
+
+> ⚠️ There is intentionally **no `labeldrop` of a distinguishing label** and **no value-normalizing relabel** here. Both merge distinct series and break `rate()`/DPM (see [The One Rule](#before-you-remediate-the-one-rule)). To reduce cardinality *without* dropping the whole metric, fix the source or use **Adaptive Metrics** (route to `adaptive-metrics`). The only safe `labeldrop` is removing a label that *exactly duplicates* a target label (e.g. `exported_instance`) — see [App-emitted labels colliding with target labels](#app-emitted-labels-colliding-with-target-labels).
+
 For Prometheus `scrape_configs`:
 
 ```yaml
 metric_relabel_configs:
-  # Drop a specific bad metric
+  # Drop a specific bad metric entirely
   - source_labels: [__name__]
     regex: bad_metric_name
     action: drop
 
-  # Drop a high-cardinality label from all metrics
-  - regex: bad_label_name
-    action: labeldrop
-
-  # Drop all labels matching a prefix (e.g., debug_*)
-  - regex: debug_.*
-    action: labeldrop
-
-  # Drop a metric only when a specific label has unbounded values
-  - source_labels: [__name__, path]
-    regex: http_requests_total;/users/\d+
+  # Drop a set of debug/temporary metrics by name prefix
+  - source_labels: [__name__]
+    regex: debug_.*
     action: drop
-
-  # Aggregate path patterns to a template (replace the value)
-  - source_labels: [path]
-    regex: /users/\d+
-    target_label: path
-    replacement: /users/:id
-
-  # Aggregate status codes to classes
-  - source_labels: [status_code]
-    regex: (\d)\d\d
-    target_label: status_code
-    replacement: ${1}xx
 ```
 
 For Grafana Alloy (`prometheus.relabel` component):
@@ -397,15 +400,10 @@ prometheus.relabel "drop_bad_metric" {
     regex = "bad_metric_name"
     action = "drop"
   }
-
-  rule {
-    regex = "bad_label_name"
-    action = "labeldrop"
-  }
 }
 ```
 
-**Always test in staging first.** A misconfigured `labeldrop` regex can wipe critical labels across every metric.
+**Always test in staging first**, and prefer fixing the source or using Adaptive Metrics over any scrape-time drop.
 
 ---
 
