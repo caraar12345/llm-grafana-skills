@@ -19,6 +19,7 @@ import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { browser } from 'k6/browser';
 import { Rate, Trend } from 'k6/metrics';
+// asyncCheck (not bare check from k6) is required for async browser locators — see references/gotchas.md
 import { check as asyncCheck } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 
 const timeToResult = new Trend('time_to_result', true);

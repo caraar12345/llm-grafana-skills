@@ -82,6 +82,29 @@ tests (many iterations, abort poisons the run).
 with `tags: { name: '...' }` on the underlying http call so failures
 show up per-endpoint in the summary.
 
+### In browser iterations use `asyncCheck` from `k6-utils`, not bare `check()`
+
+The load-test templates import
+`import { check as asyncCheck } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js'`
+for assertions inside the browser scenario. This is deliberate.
+
+Standard `check()` from `k6` is **synchronous**: it evaluates each
+predicate immediately and expects a boolean back. Browser locator
+methods (`isVisible()`, `textContent()`, …) are **async** and return
+Promises. A Promise is always truthy, so a bare `check()` against an
+async predicate:
+
+- passes every time, regardless of the actual page state, and
+- never awaits the assertion, so the check is meaningless.
+
+The iteration shows green while the assertion never really ran —
+the same silent-green-failure class as the library-mixing gotcha
+above. `asyncCheck` from `k6-utils` awaits the predicate before
+recording the result.
+
+Rule: synchronous protocol code → `check()` from `k6`; async
+browser code → `asyncCheck` (`check` from `k6-utils`).
+
 ### Pick one `expect`/`check` library per workflow — don't mix
 
 The templates ship `expect()` from **`k6-testing`** (a JS library

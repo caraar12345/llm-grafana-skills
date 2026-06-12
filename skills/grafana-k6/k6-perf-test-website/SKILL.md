@@ -5,7 +5,8 @@ description: >
   a public website end-to-end with k6. Produces a hybrid (protocol +
   browser) test suite, SLO-backed thresholds, a load-generator monitor
   sidecar, and a Grafana-side investigation playbook for backends the
-  user owns. Triggers on "perf test my site", "load test this URL",
+  user owns. Triggers on "perf test my site", "performance test my
+  site", "load test this URL",
   "stress test my web app", "I want to load test [URL]", "set up k6
   against my website", "write a k6 suite for [site]", "see if my site
   handles N concurrent users", or "how does my site perform under
@@ -59,6 +60,8 @@ Tools the skill prefers when installed:
 - `gcx` — Grafana Cloud CLI for shell-friendly queries, datasource
   discovery, and Grafana Cloud k6 cloud-run dispatch.
 - `k6` binary — local validation runs and breakpoint hunting.
+- `k6 x docs` (xk6-docs) — look up k6 API surface when writing or
+  editing scripts without `mcp-k6` available.
 
 If these tools are not configured the skill falls back to plain CLI
 tools (`k6`, `npx`, `curl`) and hand-written scripts. The skill does
@@ -66,7 +69,7 @@ not own toolchain setup; defer to the user's existing setup process.
 
 Explicit non-goals:
 
-- Protocol-only suites (planned as a separate future skill).
+- Protocol-only suites (out of scope for this skill).
 - API-only / non-browser apps.
 - Mobile-native testing.
 - Capacity planning beyond finding and tagging a breakpoint.
@@ -175,6 +178,10 @@ Per workflow:
 2. Run: `node recordings/scripts/wN-<short-name>.js` → writes `recordings/har/wN-<short-name>.har`
 3. Convert: `npx har-to-k6 recordings/har/wN-<short-name>.har -o tests/wN-<short-name>/from-har.js`
 4. Commit both HAR and `from-har.js` (audit trail for bundle-path changes).
+
+If the recorder fails or produces an unusable HAR (bot-blocking,
+missing hydration, third-party noise), see the Recording section of
+`references/gotchas.md` and `references/recording-with-playwright.md`.
 
 Prefer `mcp-k6` recording and migration tools if available.
 
