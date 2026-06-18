@@ -1,7 +1,7 @@
 ---
 name: datasource-provisioning
 license: Apache-2.0
-description: Generate a copy-paste Grafana data source provisioning config for any plugin by fetching that plugin's standardized settings schema from the Grafana plugins CDN. Given a data source type (e.g. "infinity", "yesoreyeram-infinity-datasource", "clickhouse", "github"), resolve its latest version, ASK whether the user wants a YAML config file or Terraform, map each schema field to jsonData/secureJsonData/root by its declared target, and emit a ready-to-use provisioning/datasources/*.yaml or *.tf. Use when the user asks to provision a data source, set up a datasource YAML, configure a plugin data source as code, generate Terraform for a data source, or says "provision <plugin>", "datasource yaml for <plugin>", "terraform for <plugin>", "configure <plugin> as code" — even when they only name the plugin and not the word "provisioning".
+description: Generate a copy-paste Grafana data source provisioning file (YAML or Terraform) for any plugin from its standardized settings schema on the plugins CDN. Use when the user wants to provision or configure a data source as code — e.g. "provision infinity", "datasource yaml for clickhouse", "terraform for the github datasource" — even when they only name the plugin and not the word "provisioning".
 ---
 
 ## Workflow
