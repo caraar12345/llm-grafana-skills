@@ -88,6 +88,18 @@ Schema shape (`schemaVersion: "v1"`) — each field declares where it goes and i
 
 Select only the fields relevant to what the user asked for (chosen auth method + connection), not all of them. Honor `validations.allowedValues` for selector fields like `auth_method`. Each field's `description` tells you which auth method it belongs to.
 
+If you need references for example settings
+
+```
+https://plugins-cdn.grafana.net/<PLUGIN_ID>/<VERSION>/public/plugins/<PLUGIN_ID>/schema/v0alpha1.json
+```
+
+```bash
+ID=yesoreyeram-infinity-datasource
+VER=$(curl -s "https://grafana.com/api/plugins/$ID" | jq -r '.version')
+curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/v0alpha1.json"
+```
+
 ### 6. Map each field by its `target`, in the chosen format's syntax
 
 | `target`         | YAML                                                                  | Terraform (`grafana_data_source`)                                                    |
