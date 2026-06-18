@@ -79,8 +79,6 @@ Select only the fields relevant to what the user asked for (chosen auth method +
 
 Use each field's `valueType` for the scalar (`string` quoted in YAML, `boolean`→`true`/`false`, `number` bare). Never inline a real secret. Nested objects (`oauth2`, `aws`) and arrays (`allowedHosts`, `scopes`) map directly.
 
-> **Format reference (optional).** If the plugin also ships `configuring-<PLUGIN_ID>/SKILL.md` (`.../skills/configuring-<PLUGIN_ID>/SKILL.md`), read its `### Provisioning with a config file` or `### Provisioning with Terraform` subsection — whichever matches step 3 — for worked, copy-paste examples. The schema in step 4 stays authoritative on field names and targets; the prose just confirms syntax.
-
 ### 6. Emit the file
 
 **YAML** → `provisioning/datasources/<name>.yaml`:
