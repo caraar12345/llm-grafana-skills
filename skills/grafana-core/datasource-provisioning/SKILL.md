@@ -15,11 +15,11 @@ Grafana data source plugins publish a standardized, machine-readable settings sc
 Provisioning needs the canonical plugin id (`<org>-<name>-datasource`), not the short name a user might say.
 
 - Already canonical (contains `-datasource` or `-app`)? Use as-is: `yesoreyeram-infinity-datasource`.
-- Short name only (e.g. `infinity`, `clickhouse`)? Resolve via the catalog API:
+- Short name only (e.g. `infinity`, `clickhouse`)? Search the catalog API with `filter=<keyword>`:
   ```bash
-  curl -s "https://grafana.com/api/plugins?typeCodes=datasource&keyword=infinity" \
+  curl -s "https://grafana.com/api/plugins?typeCode=datasource&filter=infinity" \
     | jq -r '.items[] | "\(.slug)\t\(.name)"'
-  # pick the slug whose name matches what the user meant → yesoreyeram-infinity-datasource
+  # → yesoreyeram-infinity-datasource    Infinity
   ```
   Multiple matches → show the candidates and ask which one.
 
