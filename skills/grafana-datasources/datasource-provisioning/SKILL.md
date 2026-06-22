@@ -113,6 +113,8 @@ If `schema/dsconfig.json` 404s (older plugins):
 
 Use each field's `valueType` for the scalar (`string` quoted in YAML, `boolean`→`true`/`false`, `number` bare). Never inline a real secret. Nested objects (`oauth2`, `aws`) and arrays (`allowedHosts`, `scopes`) map directly.
 
+Always set `access` (`root` target) and default it to `proxy` — queries route through the Grafana server (the secure default); only use `direct` (browser → data source) if the user explicitly asks for it. In Terraform the argument is `access_mode`.
+
 ### 7. Ask the format, then emit the file
 
 **Now ask: YAML or Terraform?** Same fields, different output file and syntax — nothing earlier in the workflow depends on the answer, which is why the question lives here. Don't assume: "provision X" may mean either; skip the question only if the user already named a format ("terraform for X"). YAML file provisioning is the native, zero-dependency path; Terraform needs the Grafana provider.
@@ -131,6 +133,7 @@ apiVersion: 1
 datasources:
   - name: Infinity # must be unique across the instance — collides even with a different datasource type
     type: yesoreyeram-infinity-datasource # = pluginType from the schema
+    access: proxy # always set; default proxy (route queries through the Grafana server)
     uid: infinity-ds # also unique and immutable so dashboards can reference it
     jsonData:
       auth_method: apiKey # value from validations.allowedValues
@@ -152,9 +155,10 @@ variable "api_key" {
 }
 
 resource "grafana_data_source" "infinity" {
-  type = "yesoreyeram-infinity-datasource"
-  name = "Infinity"
-  uid  = "infinity-ds"
+  type        = "yesoreyeram-infinity-datasource"
+  name        = "Infinity"
+  uid         = "infinity-ds"
+  access_mode = "proxy" # always set; default proxy (route queries through the Grafana server)
 
   json_data_encoded = jsonencode({
     auth_method  = "apiKey"
