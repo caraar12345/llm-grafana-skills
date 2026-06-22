@@ -189,6 +189,8 @@ curl -s https://grafana.example.com/api/datasources/uid/<uid>/health \
 # { "status": "ERROR" } → URL unreachable or auth misconfigured
 ```
 
+Or verify in the UI: visit `<https://grafana.example.com>/connections/datasources/edit/<uid>` and click **Test**.
+
 ## Convert an existing data source
 
 To codify a data source already configured in a running instance, read its config through the **Grafana MCP server** ([grafana/mcp-grafana](https://github.com/grafana/mcp-grafana)).
