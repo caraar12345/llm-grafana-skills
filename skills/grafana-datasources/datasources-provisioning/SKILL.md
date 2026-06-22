@@ -107,8 +107,6 @@ Worked examples live under `settingsExamples.examples`, an object keyed by scena
 ### 5. Fallback when no schema is published
 
 If `schema/dsconfig.json` 404s (older plugins):
-
-- Try the `configuring-<PLUGIN_ID>/SKILL.md` prose skill (its provisioning + auth-method sections), then the CDN `README.md`, then the docs link from the catalog API.
 - Last resort: the generic structure in [grafana-oss](../grafana-oss/SKILL.md) (§ Data source provisioning) — tell the user the field names are best-effort, not plugin-authoritative.
 
 ### 6. Map each field by its `target`
