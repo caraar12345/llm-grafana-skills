@@ -51,7 +51,7 @@ curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/dsc
 This file conforms to the **dsconfig** schema spec — the source of truth for how to interpret it. Don't re-derive field semantics from memory (`valueType` alone spans `string`, `number`, `boolean`, `array`, `object`, `map`, `any`); consult the spec when a field isn't a plain scalar:
 
 - Prose spec: https://raw.githubusercontent.com/grafana/dsconfig/refs/heads/main/dsconfig/schema.md
-- Meta-schema (defines the format of every `settings.schema.json`): https://raw.githubusercontent.com/grafana/dsconfig/refs/heads/main/dsconfig/schema.json
+- Meta-schema (defines the format of every `dsconfig.json`): https://raw.githubusercontent.com/grafana/dsconfig/refs/heads/main/dsconfig/schema.json
 
 What you need from each field to provision: `key` (the provisioning key), `valueType`, `target` (`root` | `jsonData` | `secureJsonData`), and `validations` (honor `allowedValues` for selectors like `auth_method`). Orientation example (`schemaVersion: "v1"`):
 
@@ -164,7 +164,7 @@ resource "grafana_data_source" "infinity" {
 
 ### 7. Fallback when no schema is published
 
-If `schema/settings.schema.json` 404s (older plugins):
+If `schema/dsconfig.json` 404s (older plugins):
 
 - Try the `configuring-<PLUGIN_ID>/SKILL.md` prose skill (its provisioning + auth-method sections), then the CDN `README.md`, then the docs link from the catalog API.
 - Last resort: the generic structure in [grafana-oss](../grafana-oss/SKILL.md) (§ Data source provisioning) — tell the user the field names are best-effort, not plugin-authoritative.
