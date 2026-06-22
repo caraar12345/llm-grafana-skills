@@ -46,36 +46,30 @@ VER=$(curl -s "https://grafana.com/api/plugins/$ID" | jq -r '.version')
 curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/settings.schema.json"
 ```
 
-Schema shape (`schemaVersion: "v1"`) — each field declares where it goes and its constraints:
+This file conforms to the **dsconfig** schema spec — the source of truth for how to interpret it. Don't re-derive field semantics from memory (`valueType` alone spans `string`, `number`, `boolean`, `array`, `object`, `map`, `any`); consult the spec when a field isn't a plain scalar:
+
+- Prose spec: https://raw.githubusercontent.com/grafana/dsconfig/refs/heads/main/dsconfig/schema.md
+- Meta-schema (defines the format of every `settings.schema.json`): https://raw.githubusercontent.com/grafana/dsconfig/refs/heads/main/dsconfig/schema.json
+
+What you need from each field to provision: `key` (the provisioning key), `valueType`, `target` (`root` | `jsonData` | `secureJsonData`), and `validations` (honor `allowedValues` for selectors like `auth_method`). Orientation example (`schemaVersion: "v1"`):
 
 ```jsonc
 {
   "pluginType": "yesoreyeram-infinity-datasource",
   "fields": [
     {
-      "key": "auth_method", // the provisioning key
-      "valueType": "string", // string | boolean | number
-      "target": "jsonData", // root | jsonData | secureJsonData
+      "key": "auth_method",
+      "valueType": "string",
+      "target": "jsonData",
       "validations": [
-        {
-          "type": "allowedValues",
-          "values": [
-            "none",
-            "basicAuth",
-            "apiKey",
-            "bearerToken",
-            "oauth2",
-            "aws",
-            "azureBlob",
-          ],
-        },
-      ],
-    },
-  ],
+        { "type": "allowedValues", "values": ["none", "basicAuth", "apiKey", "bearerToken", "oauth2", "aws", "azureBlob"] }
+      ]
+    }
+  ]
 }
 ```
 
-Select only the fields relevant to what the user asked for (chosen auth method + connection), not all of them. Honor `validations.allowedValues` for selector fields like `auth_method`. Each field's `description` tells you which auth method it belongs to.
+Select only the fields relevant to what the user asked for (chosen auth method + connection), not all of them. Each field's `description` tells you which auth method it belongs to.
 
 If you need references for example settings
 
