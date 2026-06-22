@@ -123,7 +123,7 @@ Always set `access` (`root` target) and default it to `proxy` — queries route 
 
 ### 7. Ask the format, then emit the file
 
-**Now ask: YAML or Terraform?** Same fields, different output file and syntax — nothing earlier in the workflow depends on the answer, which is why the question lives here. Don't assume: "provision X" may mean either; skip the question only if the user already named a format ("terraform for X"). YAML file provisioning is the native, zero-dependency path; Terraform needs the Grafana provider.
+**Now ask: YAML or Terraform?** Same fields, different output file and syntax. Don't assume: "provision X" may mean either; skip the question only if the user already named a format ("terraform for X"). YAML file provisioning is the native, zero-dependency path; Terraform needs the official [`grafana/grafana`](https://registry.terraform.io/providers/grafana/grafana/latest) provider.
 
 | Choice               | Produces                                     |
 | -------------------- | -------------------------------------------- |
@@ -178,6 +178,8 @@ resource "grafana_data_source" "infinity" {
   })
 }
 ```
+
+`grafana_data_source` is from the [`grafana/grafana`](https://registry.terraform.io/providers/grafana/grafana/latest/docs/resources/data_source) provider — the authoritative reference for argument names (`access_mode`, `json_data_encoded`, `secure_json_data_encoded`). This file is only the resource; the user supplies the `required_providers` + `provider "grafana"` block and credentials.
 
 ### 8. Return the file to the user
 
