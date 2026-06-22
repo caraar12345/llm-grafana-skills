@@ -26,6 +26,8 @@ Provisioning needs the canonical plugin id (`<org>-<name>-datasource`), not the 
   ```
   Multiple matches → show the candidates and ask which one.
 
+The snippets below use Infinity (`yesoreyeram-infinity-datasource`) as the worked example — substitute the id resolved here (and the version from step 3) in every command and output.
+
 ### 3. Resolve the latest version
 
 ```bash
