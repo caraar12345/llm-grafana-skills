@@ -11,7 +11,7 @@ description: Generate a copy-paste Grafana data source provisioning file (YAML o
 **Ask this before anything else** (skip only if the user already made it clear):
 
 - **From scratch** — the user names a plugin type to provision → continue with step 2.
-- **From an existing data source** in a running instance → jump to [Convert an existing data source](#convert-an-existing-data-source), then return to step 5.
+- **From an existing data source** in a running instance → jump to [Convert an existing data source](#convert-an-existing-data-source), then return to step 6.
 
 ### 2. Resolve the full plugin id
 
@@ -96,7 +96,14 @@ VER=$(curl -s "https://grafana.com/api/plugins/$ID" | jq -r '.version')
 curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/v0alpha1.json"
 ```
 
-### 5. Map each field by its `target`
+### 5. Fallback when no schema is published
+
+If `schema/dsconfig.json` 404s (older plugins):
+
+- Try the `configuring-<PLUGIN_ID>/SKILL.md` prose skill (its provisioning + auth-method sections), then the CDN `README.md`, then the docs link from the catalog API.
+- Last resort: the generic structure in [grafana-oss](../grafana-oss/SKILL.md) (§ Data source provisioning) — tell the user the field names are best-effort, not plugin-authoritative.
+
+### 6. Map each field by its `target`
 
 | `target`         | YAML                                                                  | Terraform (`grafana_data_source`)                                                    |
 | ---------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -106,7 +113,7 @@ curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/v0a
 
 Use each field's `valueType` for the scalar (`string` quoted in YAML, `boolean`→`true`/`false`, `number` bare). Never inline a real secret. Nested objects (`oauth2`, `aws`) and arrays (`allowedHosts`, `scopes`) map directly.
 
-### 6. Ask the format, then emit the file
+### 7. Ask the format, then emit the file
 
 **Now ask: YAML or Terraform?** Same fields, different output file and syntax — nothing earlier in the workflow depends on the answer, which is why the question lives here. Don't assume: "provision X" may mean either; skip the question only if the user already named a format ("terraform for X"). YAML file provisioning is the native, zero-dependency path; Terraform needs the Grafana provider.
 
@@ -162,13 +169,6 @@ resource "grafana_data_source" "infinity" {
 }
 ```
 
-### 7. Fallback when no schema is published
-
-If `schema/dsconfig.json` 404s (older plugins):
-
-- Try the `configuring-<PLUGIN_ID>/SKILL.md` prose skill (its provisioning + auth-method sections), then the CDN `README.md`, then the docs link from the catalog API.
-- Last resort: the generic structure in [grafana-oss](../grafana-oss/SKILL.md) (§ Data source provisioning) — tell the user the field names are best-effort, not plugin-authoritative.
-
 ### 8. Return the file to the user
 
 Present the complete file in a single code block for the user to copy and paste into their environment — note where it goes:
@@ -193,8 +193,8 @@ To codify a data source already configured in a running instance, read its confi
 
 1. Find the data source with the MCP tools — `list_datasources` to browse, then `get_datasource` (by `uid` or `name`) for the full config.
 2. The result carries every **non-secret** field directly: `type`, `uid`, `url`, `access`, `basicAuth`, `basicAuthUser`, and the full `jsonData` object. Copy them as-is.
-3. **Secrets are never returned.** The `secureJsonFields` map lists _which_ secret keys are set (e.g. `{"apiKeyValue": true}`) without their values. Emit an `${ENV_VAR}` placeholder for each key it reports `true`.
-4. Cross-check against the schema (step 4) to confirm secret key names and `target` placement, then continue at **step 5** (map) and **step 6** (emit) as normal.
+3. **Secrets are never returned.** The `secureJsonFields` map lists _which_ secret keys are set (e.g. `{"apiKeyValue": true}`) without their values. Emit an `${ENV_VAR}` placeholder in `secureJsonData` for each key it reports `true`.
+4. Cross-check against the schema (step 4) to confirm secret key names and `target` placement, then continue at **step 6** (map) and **step 7** (emit) as normal.
 
 ## Related
 
