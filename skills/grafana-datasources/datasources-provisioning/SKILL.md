@@ -84,7 +84,7 @@ What you need from each field to provision: `key` (the provisioning key), `value
 
 Select only the fields relevant to what the user asked for (chosen auth method + connection), not all of them. Each field's `description` tells you which auth method it belongs to.
 
-If you need references for example settings
+For ready-made example configs, fetch `v0alpha1.json`:
 
 ```
 https://plugins-cdn.grafana.net/<PLUGIN_ID>/<VERSION>/public/plugins/<PLUGIN_ID>/schema/v0alpha1.json
@@ -94,6 +94,14 @@ https://plugins-cdn.grafana.net/<PLUGIN_ID>/<VERSION>/public/plugins/<PLUGIN_ID>
 ID=yesoreyeram-infinity-datasource
 VER=$(curl -s "https://grafana.com/api/plugins/$ID" | jq -r '.version')
 curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/v0alpha1.json"
+```
+
+Worked examples live under `settingsExamples.examples`, an object keyed by scenario (e.g. `apiKey`, `oauth2ClientCredentials`). Each entry has a `summary`/`description` (the scenario) and a `value` holding the `jsonData`/`secureJsonData` payload to lift straight into the file:
+
+```bash
+# list scenarios, then pull one payload
+... | jq -r '.settingsExamples.examples | keys[]'
+... | jq '.settingsExamples.examples.apiKey.value'
 ```
 
 ### 5. Fallback when no schema is published
