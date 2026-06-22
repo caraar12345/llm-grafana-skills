@@ -55,7 +55,7 @@ This file conforms to the **dsconfig** schema spec — the source of truth for h
 
 What you need from each field to provision: `key` (the provisioning key), `valueType`, `target` (`root` | `jsonData` | `secureJsonData`), and `validations` (honor `allowedValues` for selectors like `auth_method`). Orientation example (`schemaVersion: "v1"`):
 
-```jsonc
+```json
 {
   "pluginType": "yesoreyeram-infinity-datasource",
   "fields": [
@@ -73,12 +73,12 @@ What you need from each field to provision: `key` (the provisioning key), `value
             "bearerToken",
             "oauth2",
             "aws",
-            "azureBlob",
-          ],
-        },
-      ],
-    },
-  ],
+            "azureBlob"
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
