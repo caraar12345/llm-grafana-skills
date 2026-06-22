@@ -37,13 +37,13 @@ Never hardcode a version — the CDN path is version-pinned and a stale version 
 ### 4. Fetch the settings schema (primary structured source)
 
 ```
-https://plugins-cdn.grafana.net/<PLUGIN_ID>/<VERSION>/public/plugins/<PLUGIN_ID>/schema/settings.schema.json
+https://plugins-cdn.grafana.net/<PLUGIN_ID>/<VERSION>/public/plugins/<PLUGIN_ID>/schema/dsconfig.json
 ```
 
 ```bash
 ID=yesoreyeram-infinity-datasource
 VER=$(curl -s "https://grafana.com/api/plugins/$ID" | jq -r '.version')
-curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/settings.schema.json"
+curl -sf "https://plugins-cdn.grafana.net/$ID/$VER/public/plugins/$ID/schema/dsconfig.json"
 ```
 
 This file conforms to the **dsconfig** schema spec — the source of truth for how to interpret it. Don't re-derive field semantics from memory (`valueType` alone spans `string`, `number`, `boolean`, `array`, `object`, `map`, `any`); consult the spec when a field isn't a plain scalar:
@@ -62,10 +62,21 @@ What you need from each field to provision: `key` (the provisioning key), `value
       "valueType": "string",
       "target": "jsonData",
       "validations": [
-        { "type": "allowedValues", "values": ["none", "basicAuth", "apiKey", "bearerToken", "oauth2", "aws", "azureBlob"] }
-      ]
-    }
-  ]
+        {
+          "type": "allowedValues",
+          "values": [
+            "none",
+            "basicAuth",
+            "apiKey",
+            "bearerToken",
+            "oauth2",
+            "aws",
+            "azureBlob",
+          ],
+        },
+      ],
+    },
+  ],
 }
 ```
 
