@@ -73,6 +73,7 @@ Core Grafana concepts — dashboards, visualization, PromQL, alerting, and telem
 | [alloy](skills/grafana-core/alloy) | Grafana Alloy OpenTelemetry collector — config language, components, and telemetry pipelines |
 | [beyla](skills/grafana-core/beyla) | Grafana Beyla eBPF auto-instrumentation for zero-code application observability |
 | [opentelemetry](skills/grafana-core/opentelemetry) | OpenTelemetry with the Grafana stack — SDK instrumentation, OTLP, and collectors |
+| [datasources-provisioning](skills/grafana-datasources/datasources-provisioning) | Generate a copy-paste Grafana data source provisioning file (YAML or Terraform) for any plugin |
 
 ### grafana-cloud
 
@@ -166,6 +167,7 @@ grafana-skills/
 ├── skill-registry.json               # Machine-readable skill manifest
 ├── skills/                           # All skills, grouped by plugin
 │   ├── grafana-core/
+│   ├── grafana-datasources/
 │   ├── grafana-cloud/
 │   ├── grafana-lgtm/
 │   ├── grafana-plugins/
