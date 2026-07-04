@@ -12,6 +12,7 @@
     {
       "name": "grafana-core",
       "source": "./",
+      "strict": false,
       "description": "Skills for core Grafana concepts — dashboards, panels, PromQL, visualization, alerting, Alloy, Beyla, and OpenTelemetry",
       "version": "0.1.0",
       "category": "grafana",
@@ -40,6 +41,7 @@
     {
       "name": "grafana-cloud",
       "source": "./",
+      "strict": false,
       "description": "Skills for Grafana Cloud — fleet management, cloud integrations, adaptive metrics, AI/ML, infrastructure monitoring, database observability, private connectivity, cost management, and account administration",
       "version": "0.1.0",
       "category": "grafana",
@@ -79,6 +81,7 @@
     {
       "name": "grafana-lgtm",
       "source": "./",
+      "strict": false,
       "description": "Skills for the LGTM open-source stack — Loki (logs), Grafana Tempo (traces), Grafana Mimir/Prometheus (metrics), and Grafana Pyroscope (profiles)",
       "version": "0.1.0",
       "category": "grafana",
@@ -104,6 +107,7 @@
     {
       "name": "grafana-plugins",
       "source": "./",
+      "strict": false,
       "description": "Skills for building Grafana plugins — bundle optimisation, code splitting, React 19 migration, and the @grafana/scenes framework",
       "version": "0.1.0",
       "category": "grafana",
@@ -124,6 +128,7 @@
     {
       "name": "grafana-app-sdk",
       "source": "./",
+      "strict": false,
       "description": "Skills for building apps on the Grafana App Platform using grafana-app-sdk — CUE schemas, reconcilers, and admission control",
       "version": "0.1.0",
       "category": "grafana",
@@ -146,6 +151,7 @@
     {
       "name": "grafana-k6",
       "source": "./",
+      "strict": false,
       "description": "Skills for working with k6 — open-source load testing and performance testing",
       "version": "0.1.0",
       "category": "grafana",
